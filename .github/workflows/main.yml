@@ -1,4 +1,3 @@
-# yaml
 name: Daily Build and Release
 
 on:
@@ -23,10 +22,27 @@ jobs:
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
+      - name: Verify JAR exists
+        run: |
+          if ls target/*.jar 1> /dev/null 2>&1; then
+            echo "JAR file found."
+          else
+            echo "No JAR file found in target/. Build failed!" && exit 1
+          fi
+
       - name: Get current date in Asia/Ho_Chi_Minh
         id: date
         run: |
           echo "DATE=$(TZ='Asia/Ho_Chi_Minh' date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Delete previous tag if exists
+        run: |
+          git fetch --tags origin
+          if git rev-parse refs/tags/nightly-${{ env.DATE }} >/dev/null 2>&1; then
+            git push --delete origin nightly-${{ env.DATE }} || true
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
