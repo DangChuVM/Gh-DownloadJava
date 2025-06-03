@@ -2,7 +2,7 @@ name: Daily Build and Release
 
 on:
   schedule:
-    - cron: '0 18 * * *'  # 18h UTC = 1h sáng hôm sau theo giờ Việt Nam
+    - cron: '0 18 * * *'  # 1h sáng giờ VN
   workflow_dispatch:
 
 jobs:
@@ -35,14 +35,19 @@ jobs:
         run: |
           echo "DATE=$(TZ='Asia/Ho_Chi_Minh' date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Delete previous tag if exists
+      - name: Delete existing release if exists
         run: |
-          git fetch --tags origin
-          if git rev-parse refs/tags/nightly-${{ env.DATE }} >/dev/null 2>&1; then
-            git push --delete origin nightly-${{ env.DATE }} || true
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          curl -s -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/releases/tags/nightly-${{ env.DATE }} || true
+
+      - name: Delete existing tag if exists
+        run: |
+          curl -s -X DELETE \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/git/refs/tags/nightly-${{ env.DATE }} || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
