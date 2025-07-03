@@ -18,14 +18,10 @@ jobs:
         run: echo "date=$(TZ=Asia/Ho_Chi_Minh date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Build project
+        run: mvn clean package -DskipTests
+
+      - name: Delete old nightly tag (if exists)
         run: |
-          # Thay thế lệnh build phù hợp với dự án của bạn, ví dụ:
-      - name: Build project
-        env:
-          DATE: ${{ steps.date.outputs.date }}
-        run: |
-          # Thay thế lệnh build phù hợp với dự án của bạn, ví dụ:
-          ./gradlew build
           curl -s -X DELETE \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
