@@ -36,6 +36,6 @@ jobs:
             ✅ This is an automated nightly build.
             📅 Built on: ${{ steps.date.outputs.date }} (Asia/Ho_Chi_Minh time)
           files: |
-            target/*.jar
+            gh-downloader-1.0.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
